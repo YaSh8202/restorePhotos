@@ -4,6 +4,7 @@ import Image from "next/image";
 import { useState } from "react";
 import { UploadDropzone } from "react-uploader";
 import { Uploader } from "uploader";
+import { CompareSlider } from "../components/CompareSlider";
 import Footer from "../components/Footer";
 import Header from "../components/Header";
 import LoadingDots from "../components/LoadingDots";
