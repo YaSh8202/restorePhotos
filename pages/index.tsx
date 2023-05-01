@@ -29,7 +29,6 @@ const Home: NextPage = () => {
   const [restoredImage, setRestoredImage] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [restoredLoaded, setRestoredLoaded] = useState<boolean>(false);
-  const [sideBySide, setSideBySide] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [photoName, setPhotoName] = useState<string | null>(null);
 
@@ -107,43 +106,11 @@ const Home: NextPage = () => {
 
       <Header photo={session?.user?.image || undefined} />
       <main className="flex flex-1 w-full flex-col items-center justify-center text-center px-4 mt-4 sm:mb-0 mb-8">
-        <a
-          href="https://twitter.com/nutlope/status/1626074563481051136"
-          target="_blank"
-          rel="noreferrer"
-          className="border rounded-2xl py-1 px-4 text-slate-500 text-sm mb-5 hover:text-slate-600 transition duration-300 ease-in-out"
-        >
-          <span className="font-semibold">647,143 images</span> restored and
-          counting
-        </a>
         <h1 className="mx-auto max-w-4xl font-display text-4xl font-bold tracking-normal text-slate-900 sm:text-6xl mb-5">
-          Restore any face photo
+          Get Text from Image
         </h1>
-        {status === "authenticated" && data && (
-          <p className="text-slate-500">
-            You have{" "}
-            <span className="font-semibold">
-              {data.remainingGenerations} generations
-            </span>{" "}
-            left today. Your generation
-            {Number(data.remainingGenerations) > 1 ? "s" : ""} will renew in{" "}
-            <span className="font-semibold">
-              {data.hours} hours and {data.minutes} minutes.
-            </span>
-          </p>
-        )}
+
         <div className="flex justify-between items-center w-full flex-col mt-4">
-          <Toggle
-            className={`${restoredLoaded ? "visible mb-6" : "invisible"}`}
-            sideBySide={sideBySide}
-            setSideBySide={(newVal) => setSideBySide(newVal)}
-          />
-          {restoredLoaded && sideBySide && (
-            <CompareSlider
-              original={originalPhoto!}
-              restored={restoredImage!}
-            />
-          )}
           {status === "loading" ? (
             <div className="max-w-[670px] h-[250px] flex justify-center items-center">
               <Rings
@@ -191,10 +158,10 @@ const Home: NextPage = () => {
               height={475}
             />
           )}
-          {restoredImage && originalPhoto && !sideBySide && (
+          {restoredImage && originalPhoto && (
             <div className="flex sm:space-x-4 sm:flex-row flex-col">
               <div>
-                <h2 className="mb-1 font-medium text-lg">Original Photo</h2>
+                <h2 className="mb-1 font-medium text-lg">Photo</h2>
                 <Image
                   alt="original photo"
                   src={originalPhoto}
@@ -204,17 +171,8 @@ const Home: NextPage = () => {
                 />
               </div>
               <div className="sm:mt-0 mt-8">
-                <h2 className="mb-1 font-medium text-lg">Restored Photo</h2>
-                <a href={restoredImage} target="_blank" rel="noreferrer">
-                  <Image
-                    alt="restored photo"
-                    src={restoredImage}
-                    className="rounded-2xl relative sm:mt-0 mt-2 cursor-zoom-in"
-                    width={475}
-                    height={475}
-                    onLoadingComplete={() => setRestoredLoaded(true)}
-                  />
-                </a>
+                <h2 className="mb-1 font-medium text-lg">Text</h2>
+                <p className='text-lg mt-2 sm:mt-0 w-[500px] ' >{restoredImage}</p>
               </div>
             </div>
           )}
@@ -255,7 +213,7 @@ const Home: NextPage = () => {
                 Upload New Photo
               </button>
             )}
-            {restoredLoaded && (
+            {/* {restoredLoaded && (
               <button
                 onClick={() => {
                   downloadPhoto(restoredImage!, appendNewToName(photoName!));
@@ -264,11 +222,11 @@ const Home: NextPage = () => {
               >
                 Download Restored Photo
               </button>
-            )}
+            )} */}
           </div>
         </div>
       </main>
-      <Footer />
+      {/* <Footer /> */}
     </div>
   );
 };

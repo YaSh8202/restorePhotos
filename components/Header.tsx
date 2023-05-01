@@ -13,9 +13,14 @@ export default function Header({ photo }: { photo?: string | undefined }) {
           height={25}
         />
         <h1 className="sm:text-4xl text-2xl font-bold ml-2 tracking-tight">
-          restorePhotos.io
+          textfromImage.io
         </h1>
       </Link>
+      <div className="">
+        <Link href="/plagiarism-checker">
+          <p className="text-lg font-semibold">Plagiarism Checker</p>
+        </Link>
+      </div>
       {photo ? (
         <Image
           alt="Profile picture"
