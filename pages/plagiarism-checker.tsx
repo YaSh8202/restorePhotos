@@ -4,15 +4,8 @@ import Image from "next/image";
 import { useState } from "react";
 import { UploadDropzone } from "react-uploader";
 import { Uploader } from "uploader";
-import { CompareSlider } from "../components/CompareSlider";
-import Footer from "../components/Footer";
 import Header from "../components/Header";
 import LoadingDots from "../components/LoadingDots";
-import Toggle from "../components/Toggle";
-import appendNewToName from "../utils/appendNewToName";
-import downloadPhoto from "../utils/downloadPhoto";
-import NSFWPredictor from "../utils/nsfwCheck";
-import va from "@vercel/analytics";
 import { useSession, signIn } from "next-auth/react";
 import useSWR from "swr";
 import { Rings } from "react-loader-spinner";
@@ -45,23 +38,6 @@ const Home: NextPage = () => {
     // multi: true,
     editor: { images: { crop: false } },
     styles: { colors: { primary: "#000" } },
-    onValidate: async (file: File): Promise<undefined | string> => {
-      let isSafe = false;
-      try {
-        isSafe = await NSFWPredictor.isSafeImg(file);
-        if (!isSafe) va.track("NSFW Image blocked");
-      } catch (error) {
-        console.error("NSFW predictor threw an error", error);
-      }
-      if (!isSafe) {
-        return "Detected a NSFW image which is not allowed.";
-      }
-
-      if (data.remainingGenerations === 0) {
-        return "No more generations left for the day.";
-      }
-      return undefined;
-    },
   };
 
   const UploadDropZone = () => (
@@ -194,7 +170,9 @@ const Home: NextPage = () => {
               </div>
               <div className="my-8">
                 <h2 className="mb-1 font-medium text-lg">Plagrism: </h2>
-                <p className="text-lg mt-2 text-center sm:mt-0 ">{result.plag.toFixed(2)}%</p>
+                <p className="text-lg mt-2 text-center sm:mt-0 ">
+                  {result.plag.toFixed(2)}%
+                </p>
               </div>
             </div>
           )}
