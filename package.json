@@ -20,13 +20,11 @@
     "nsfwjs": "^2.4.2",
     "openai": "^3.2.1",
     "react": "18.2.0",
-    "react-compare-slider": "^2.2.0",
     "react-countup": "^6.4.0",
     "react-dom": "18.2.0",
     "react-loader-spinner": "^5.3.4",
     "react-uploader": "^3.3.0",
     "react-use-measure": "^2.1.1",
-    "string-similarity": "^4.0.4",
     "swr": "^2.1.0",
     "uploader": "^3.3.0"
   },
