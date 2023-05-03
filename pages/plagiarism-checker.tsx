@@ -26,19 +26,23 @@ const uploader = Uploader({
 
 const Home: NextPage = () => {
   const [originalPhoto, setOriginalPhoto] = useState<string | null>(null);
-  const [restoredImage, setRestoredImage] = useState<string | null>(null);
+  const [originalPhoto2, setOriginalPhoto2] = useState<string | null>(null);
+
+  const [result, setResult] = useState<{
+    plag: number;
+  } | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [restoredLoaded, setRestoredLoaded] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
-  const [photoName, setPhotoName] = useState<string | null>(null);
 
   const fetcher = (url: string) => fetch(url).then((res) => res.json());
   const { data, mutate } = useSWR("/api/remaining", fetcher);
   const { data: session, status } = useSession();
 
   const options = {
-    maxFileCount: 1,
+    maxFileCount: 2,
     mimeTypes: ["image/jpeg", "image/png", "image/jpg"],
+    // multi: true,
     editor: { images: { crop: false } },
     styles: { colors: { primary: "#000" } },
     onValidate: async (file: File): Promise<undefined | string> => {
@@ -52,6 +56,7 @@ const Home: NextPage = () => {
       if (!isSafe) {
         return "Detected a NSFW image which is not allowed.";
       }
+
       if (data.remainingGenerations === 0) {
         return "No more generations left for the day.";
       }
@@ -61,13 +66,18 @@ const Home: NextPage = () => {
 
   const UploadDropZone = () => (
     <UploadDropzone
-      uploader={uploader}
-      options={options}
+      uploader={{ ...uploader }}
+      options={{
+        ...options,
+      }}
       onUpdate={(file) => {
-        if (file.length !== 0) {
-          setPhotoName(file[0].originalFile.originalFileName);
+        if (file.length === 2) {
           setOriginalPhoto(file[0].fileUrl.replace("raw", "thumbnail"));
-          generatePhoto(file[0].fileUrl.replace("raw", "thumbnail"));
+          setOriginalPhoto2(file[1].fileUrl.replace("raw", "thumbnail"));
+          generatePhoto(
+            file[0].fileUrl.replace("raw", "thumbnail"),
+            file[1].fileUrl.replace("raw", "thumbnail")
+          );
         }
       }}
       width="670px"
@@ -75,24 +85,25 @@ const Home: NextPage = () => {
     />
   );
 
-  async function generatePhoto(fileUrl: string) {
+  async function generatePhoto(fileUrl: string, fileUrl2: string) {
     await new Promise((resolve) => setTimeout(resolve, 500));
     setLoading(true);
-
-    const res = await fetch("/api/generate", {
+    console.log("fileUrl", fileUrl, "fileUrl2", fileUrl2);
+    const res = await fetch("/api/checkplag", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ imageUrl: fileUrl }),
+      body: JSON.stringify({ img1: fileUrl, img2: fileUrl2 }),
     });
 
-    let newPhoto = await res.json();
+    let plagResult = await res.json();
+    console.log("result", plagResult);
     if (res.status !== 200) {
-      setError(newPhoto);
+      setError(plagResult);
     } else {
       mutate();
-      setRestoredImage(newPhoto);
+      setResult(plagResult);
     }
     setLoading(false);
   }
@@ -100,14 +111,14 @@ const Home: NextPage = () => {
   return (
     <div className="flex max-w-6xl mx-auto flex-col items-center justify-center py-2 min-h-screen">
       <Head>
-        <title>Restore Photos</title>
+        <title>Plagiarism Checker</title>
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
       <Header photo={session?.user?.image || undefined} />
       <main className="flex flex-1 w-full flex-col items-center justify-center text-center px-4 mt-4 sm:mb-0 mb-8">
         <h1 className="mx-auto max-w-4xl font-display text-4xl font-bold tracking-normal text-slate-900 sm:text-6xl mb-5">
-          Get Text from Image
+          Plagiarism Checker
         </h1>
 
         <div className="flex justify-between items-center w-full flex-col mt-4">
@@ -130,9 +141,8 @@ const Home: NextPage = () => {
             !originalPhoto && (
               <div className="h-[250px] flex flex-col items-center space-y-6 max-w-[670px] -mt-8">
                 <div className="max-w-xl text-gray-600">
-                  Sign in below with Google to create a free account and restore
-                  your photos today. You will be able to restore 5 photos per
-                  day for free.
+                  Sign in below with Google to create a free account and check
+                  plagiarism by uploading two images.
                 </div>
                 <button
                   onClick={() => signIn("google")}
@@ -149,7 +159,7 @@ const Home: NextPage = () => {
               </div>
             )
           )}
-          {originalPhoto && !restoredImage && (
+          {originalPhoto && !result && (
             <Image
               alt="original photo"
               src={originalPhoto}
@@ -158,21 +168,33 @@ const Home: NextPage = () => {
               height={475}
             />
           )}
-          {restoredImage && originalPhoto && (
-            <div className="flex sm:space-x-4 sm:flex-row flex-col">
+          {result && originalPhoto && originalPhoto2 && (
+            <div className="flex sm:space-x-4  flex-col">
               <div>
-                <h2 className="mb-1 font-medium text-lg">Photo</h2>
-                <Image
-                  alt="original photo"
-                  src={originalPhoto}
-                  className="rounded-2xl relative"
-                  width={475}
-                  height={475}
-                />
+                <div className="flex flex-row justify-around">
+                  <h2 className="mb-1 font-medium text-lg ">Photo 1</h2>
+                  <h2 className="mb-1 font-medium text-lg ">Photo 2</h2>
+                </div>
+                <div className="flex flex-row gap-5">
+                  <Image
+                    alt="original photo"
+                    src={originalPhoto}
+                    className="rounded-2xl relative"
+                    width={475}
+                    height={475}
+                  />
+                  <Image
+                    alt="original photo"
+                    src={originalPhoto2}
+                    className="rounded-2xl relative"
+                    width={475}
+                    height={475}
+                  />
+                </div>
               </div>
-              <div className="sm:mt-0 mt-8">
-                <h2 className="mb-1 font-medium text-lg">Text</h2>
-                <p className='text-lg mt-2 sm:mt-0 w-[500px] ' >{restoredImage}</p>
+              <div className="my-8">
+                <h2 className="mb-1 font-medium text-lg">Plagrism: </h2>
+                <p className="text-lg mt-2 text-center sm:mt-0 ">{result.plag.toFixed(2)}%</p>
               </div>
             </div>
           )}
@@ -204,13 +226,14 @@ const Home: NextPage = () => {
               <button
                 onClick={() => {
                   setOriginalPhoto(null);
-                  setRestoredImage(null);
+                  setResult(null);
+                  setOriginalPhoto2(null);
                   setRestoredLoaded(false);
                   setError(null);
                 }}
                 className="bg-black rounded-full text-white font-medium px-4 py-2 mt-8 hover:bg-black/80 transition"
               >
-                Upload New Photo
+                Upload New Photos
               </button>
             )}
             {/* {restoredLoaded && (
